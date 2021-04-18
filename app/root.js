@@ -20,14 +20,14 @@ function AppRoot () {
     vaultData: '',
     password: '',
     error: null,
-    decrypted: null,
+    crypted: null,
   }
 }
 
 AppRoot.prototype.render = function () {
   const props = this.props
   const state = this.state || {}
-  const { error, decrypted } = state
+  const { error, crypted } = state
 
   return (
     h('.content', [
@@ -75,11 +75,15 @@ AppRoot.prototype.render = function () {
           onClick: this.decrypt.bind(this),
         }, 'Decrypt'),
 
+        h('button.encrypt', {
+          onClick: this.encrypt.bind(this),
+        }, 'Encrypt'),
+
         error ? h('.error', {
           style: { color: 'red' },
         }, error) : null,
 
-        decrypted ? h('div', decrypted) : null,
+        crypted ? h('div', crypted) : null,
 
       ])
     ])
@@ -100,13 +104,36 @@ AppRoot.prototype.decrypt = function(event) {
 
   passworder.decrypt(password, vault)
   .then((decryptedObj) => {
-    const decrypted = JSON.stringify(decryptedObj)
-    console.log('Decrypted!', decrypted)
-    this.setState({ decrypted })
+    const crypted = JSON.stringify(decryptedObj)
+    console.log('Decrypted!', crypted)
+    this.setState({ crypted })
   })
   .catch((reason) => {
     console.error(reason)
     this.setState({ error: 'Problem decoding vault.' })
+  })
+}
+
+AppRoot.prototype.encrypt = function(event) {
+  const { password, vaultData } = this.state
+
+  let vault
+  try {
+    vault = vaultData
+  } catch (e) {
+    console.error(e)
+    return this.setState({ error: 'Problem encoding vault: ' + JSON.stringify(e) })
+  }
+
+  passworder.encrypt(password, vault)
+  .then((encryptedObj) => {
+    const crypted = JSON.stringify(encryptedObj)
+    console.log('Encrypted!', crypted)
+    this.setState({ crypted })
+  })
+  .catch((reason) => {
+    console.error(reason)
+    this.setState({ error: 'Problem encoding vault.' })
   })
 }
 
